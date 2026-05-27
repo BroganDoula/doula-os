@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { engagements, proposals, deliverables, engagementPhaseEnum } from "@/db/schema";
+import { isFKViolation } from "@/lib/db-errors";
 
 type Phase = typeof engagementPhaseEnum.enumValues[number];
 type Status = "active" | "paused" | "complete";
@@ -74,12 +75,19 @@ export async function updateEngagement(formData: FormData) {
   revalidatePath(`/projects/${id}`);
 }
 
-export async function deleteEngagement(formData: FormData) {
+export async function deleteEngagement(formData: FormData): Promise<{ error: string } | undefined> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  await db.delete(engagements).where(eq(engagements.id, id));
+  try {
+    await db.delete(engagements).where(eq(engagements.id, id));
+  } catch (err) {
+    if (isFKViolation(err)) {
+      return { error: "Can't delete: this project has linked hours, deliverables, or other records. Remove those first." };
+    }
+    throw err;
+  }
   revalidatePath("/projects");
 }
 

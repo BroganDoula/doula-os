@@ -30,6 +30,8 @@ export async function createContract(formData: FormData) {
   const bytes = await file.arrayBuffer();
   const fileData = Buffer.from(bytes).toString("base64");
 
+  const fields = parseContractFields(formData);
+
   await db.insert(contracts).values({
     companyId,
     clientId: companyId,
@@ -39,11 +41,11 @@ export async function createContract(formData: FormData) {
     createdBy: userId,
     updatedBy: userId,
     reviewedAt: new Date(),
-    ...parseContractFields(formData),
+    ...fields,
   });
   revalidatePath("/contracts");
-  const createEngId = (formData.get("engagementId") as string)?.trim() || null;
-  if (createEngId) revalidatePath(`/projects/${createEngId}`);
+  revalidatePath(`/companies/${companyId}`);
+  if (fields.engagementId) revalidatePath(`/projects/${fields.engagementId}`);
 }
 
 export async function updateContract(formData: FormData) {
@@ -63,16 +65,18 @@ export async function updateContract(formData: FormData) {
     fileFields.fileMimeType = file.type || undefined;
   }
 
+  const fields = parseContractFields(formData);
+
   await db.update(contracts).set({
     companyId,
     clientId: companyId,
     ...fileFields,
     updatedBy: userId,
-    ...parseContractFields(formData),
+    ...fields,
   }).where(eq(contracts.id, id));
   revalidatePath("/contracts");
-  const updateEngId = (formData.get("engagementId") as string)?.trim() || null;
-  if (updateEngId) revalidatePath(`/projects/${updateEngId}`);
+  revalidatePath(`/companies/${companyId}`);
+  if (fields.engagementId) revalidatePath(`/projects/${fields.engagementId}`);
 }
 
 export async function deleteContract(formData: FormData) {
@@ -80,8 +84,15 @@ export async function deleteContract(formData: FormData) {
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
+  // Look up FK targets before soft-deleting so we can revalidate the right pages
+  const [row] = await db
+    .select({ companyId: contracts.companyId, engagementId: contracts.engagementId })
+    .from(contracts)
+    .where(eq(contracts.id, id))
+    .limit(1);
+
   await db.update(contracts).set({ deletedAt: new Date() }).where(eq(contracts.id, id));
   revalidatePath("/contracts");
-  const deleteEngId = (formData.get("engagementId") as string)?.trim() || null;
-  if (deleteEngId) revalidatePath(`/projects/${deleteEngId}`);
+  if (row?.companyId) revalidatePath(`/companies/${row.companyId}`);
+  if (row?.engagementId) revalidatePath(`/projects/${row.engagementId}`);
 }

@@ -44,6 +44,7 @@ export function EngagementList({
   companies: Company[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({});
 
   return (
     <table className="w-full text-sm">
@@ -94,11 +95,21 @@ export function EngagementList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(e.id)}>Edit</Button>
-                  <form action={deleteEngagement}>
-                    <input type="hidden" name="id" value={e.id} />
-                    <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                  </form>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      setDeleteErrors((prev) => { const n = { ...prev }; delete n[e.id]; return n; });
+                      const fd = new FormData();
+                      fd.append("id", e.id);
+                      const res = await deleteEngagement(fd);
+                      if (res?.error) setDeleteErrors((prev) => ({ ...prev, [e.id]: res.error }));
+                    }}
+                  >Delete</Button>
                 </div>
+                {deleteErrors[e.id] && (
+                  <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[e.id]}</p>
+                )}
               </td>
             </tr>
           )

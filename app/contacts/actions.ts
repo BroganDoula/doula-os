@@ -23,6 +23,7 @@ export async function createContact(formData: FormData) {
 
   await db.insert(contacts).values({ name, email, phone, role, notes, companyId, clientId, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath("/contacts");
+  if (companyId) revalidatePath(`/companies/${companyId}`);
 }
 
 export async function updateContact(formData: FormData) {
@@ -45,6 +46,7 @@ export async function updateContact(formData: FormData) {
     updatedBy: userId,
   }).where(eq(contacts.id, id));
   revalidatePath("/contacts");
+  if (companyId) revalidatePath(`/companies/${companyId}`);
 }
 
 export async function deleteContact(formData: FormData): Promise<{ error: string } | undefined> {
@@ -52,6 +54,7 @@ export async function deleteContact(formData: FormData): Promise<{ error: string
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
+  const companyId = (formData.get("companyId") as string) || null;
   try {
     await db.delete(contacts).where(eq(contacts.id, id));
   } catch (err) {
@@ -61,4 +64,5 @@ export async function deleteContact(formData: FormData): Promise<{ error: string
     throw err;
   }
   revalidatePath("/contacts");
+  if (companyId) revalidatePath(`/companies/${companyId}`);
 }

@@ -36,6 +36,7 @@ export async function updateCompany(formData: FormData) {
     updatedBy: userId,
   }).where(eq(companies.id, id));
   revalidatePath("/companies");
+  revalidatePath(`/companies/${id}`);
 }
 
 export async function deleteCompany(formData: FormData): Promise<{ error: string } | undefined> {
@@ -47,7 +48,7 @@ export async function deleteCompany(formData: FormData): Promise<{ error: string
     await db.delete(companies).where(eq(companies.id, id));
   } catch (err) {
     if (isFKViolation(err)) {
-      return { error: "Can't delete: this company has linked contracts or engagements. Soft-delete those first." };
+      return { error: "Can't delete: this company has linked contracts, projects, or other records. Remove those first." };
     }
     throw err;
   }

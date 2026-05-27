@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,9 @@ export function DealForm({
 }) {
   const ref = useRef<HTMLFormElement>(null);
   const isEdit = !!defaultValues;
+  const [selectedCompanyId, setSelectedCompanyId] = useState(defaultValues?.companyId ?? "");
+
+  const filteredContacts = contacts.filter((c) => c.companyId === selectedCompanyId);
 
   return (
     <form
@@ -54,6 +57,7 @@ export function DealForm({
         } else {
           await createDeal(formData);
           ref.current?.reset();
+          setSelectedCompanyId("");
         }
         onCancel?.();
       }}
@@ -69,7 +73,8 @@ export function DealForm({
             id="companyId"
             name="companyId"
             required
-            defaultValue={defaultValues?.companyId ?? ""}
+            value={selectedCompanyId}
+            onChange={(e) => setSelectedCompanyId(e.target.value)}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">Select company…</option>
@@ -84,11 +89,13 @@ export function DealForm({
           <select
             id="contactId"
             name="contactId"
+            key={selectedCompanyId}
+            disabled={!selectedCompanyId}
             defaultValue={defaultValues?.contactId ?? ""}
-            className="w-full border rounded-md px-3 py-2 text-sm bg-background"
+            className="w-full border rounded-md px-3 py-2 text-sm bg-background disabled:opacity-50"
           >
             <option value="">No contact</option>
-            {contacts.map((c) => (
+            {filteredContacts.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

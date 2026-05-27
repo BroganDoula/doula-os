@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { Company } from "@/db/schema";
 import { createContact, updateContact } from "./actions";
+
+type Company = { id: string; name: string };
 
 type DefaultValues = {
   id: string;
@@ -22,10 +23,12 @@ export function ContactForm({
   companies,
   defaultValues,
   onCancel,
+  defaultCompanyId,
 }: {
   companies: Company[];
   defaultValues?: DefaultValues;
   onCancel?: () => void;
+  defaultCompanyId?: string;
 }) {
   const ref = useRef<HTMLFormElement>(null);
   const isEdit = !!defaultValues;
@@ -56,7 +59,7 @@ export function ContactForm({
           <select
             id="companyId"
             name="companyId"
-            defaultValue={defaultValues?.companyId ?? ""}
+            defaultValue={defaultValues?.companyId ?? defaultCompanyId ?? ""}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">No company</option>
