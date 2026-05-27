@@ -1,0 +1,45 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { eq } from "drizzle-orm";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/db";
+import { hoursEntries, engagements } from "@/db/schema";
+
+export async function createHoursEntry(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const date = (formData.get("date") as string).trim();
+  if (!date) throw new Error("Date is required");
+
+  const hoursRaw = (formData.get("hours") as string).trim();
+  const hours = parseFloat(hoursRaw);
+  if (!hoursRaw || isNaN(hours) || hours <= 0) throw new Error("Valid hours required");
+
+  const type = formData.get("type") as "client" | "bd" | "admin" | "driving";
+  const engagementId = (formData.get("engagementId") as string) || null;
+  const notes = (formData.get("notes") as string)?.trim() || null;
+
+  let clientId: string | null = null;
+  if (engagementId) {
+    const eng = await db
+      .select({ clientId: engagements.clientId })
+      .from(engagements)
+      .where(eq(engagements.id, engagementId))
+      .limit(1);
+    clientId = eng[0]?.clientId ?? null;
+  }
+
+  await db.insert(hoursEntries).values({ date, hours, type, engagementId, clientId, notes });
+  revalidatePath("/hours");
+}
+
+export async function deleteHoursEntry(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  await db.delete(hoursEntries).where(eq(hoursEntries.id, id));
+  revalidatePath("/hours");
+}
