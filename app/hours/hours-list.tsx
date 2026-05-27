@@ -35,7 +35,7 @@ export function HoursList({
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const totalHours = rows.reduce((sum, r) => sum + r.hours, 0);
+  const totalHours = rows.reduce((sum, r) => sum + Number(r.hours), 0);
 
   return (
     <div className="space-y-2">

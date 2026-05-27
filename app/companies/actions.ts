@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { companies } from "@/db/schema";
+import { isFKViolation } from "@/lib/db-errors";
 
 export async function createCompany(formData: FormData) {
   const { userId } = await auth();
@@ -37,11 +38,18 @@ export async function updateCompany(formData: FormData) {
   revalidatePath("/companies");
 }
 
-export async function deleteCompany(formData: FormData) {
+export async function deleteCompany(formData: FormData): Promise<{ error: string } | undefined> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  await db.delete(companies).where(eq(companies.id, id));
+  try {
+    await db.delete(companies).where(eq(companies.id, id));
+  } catch (err) {
+    if (isFKViolation(err)) {
+      return { error: "Can't delete: this company has linked contracts or engagements. Soft-delete those first." };
+    }
+    throw err;
+  }
   revalidatePath("/companies");
 }

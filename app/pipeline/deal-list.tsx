@@ -55,8 +55,10 @@ export function DealList({
   contacts: Contact[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   return (
+    <div className="space-y-2">
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b text-left text-muted-foreground">
@@ -106,10 +108,17 @@ export function DealList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(d.id)}>Edit</Button>
-                  <form action={deleteDeal}>
-                    <input type="hidden" name="id" value={d.id} />
-                    <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                  </form>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      setDeleteError(null);
+                      const fd = new FormData();
+                      fd.append("id", d.id);
+                      const res = await deleteDeal(fd);
+                      if (res?.error) setDeleteError(res.error);
+                    }}
+                  >Delete</Button>
                 </div>
               </td>
             </tr>
@@ -117,5 +126,7 @@ export function DealList({
         )}
       </tbody>
     </table>
+    {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}
+    </div>
   );
 }

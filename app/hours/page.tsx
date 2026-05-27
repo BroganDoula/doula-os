@@ -78,7 +78,7 @@ export default async function HoursPage({
   const weeklyActuals: Record<string, number> = {};
   for (const r of weekRows) {
     if (r.engagementId) {
-      weeklyActuals[r.engagementId] = (weeklyActuals[r.engagementId] ?? 0) + r.hours;
+      weeklyActuals[r.engagementId] = (weeklyActuals[r.engagementId] ?? 0) + Number(r.hours);
     }
   }
 

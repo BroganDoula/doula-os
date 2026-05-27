@@ -8,8 +8,10 @@ import type { Company } from "@/db/schema";
 
 export function CompanyList({ rows }: { rows: Company[] }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   return (
+    <div className="space-y-2">
     <table className="w-full text-sm">
       <thead>
         <tr className="border-b text-left text-muted-foreground">
@@ -42,10 +44,17 @@ export function CompanyList({ rows }: { rows: Company[] }) {
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
-                  <form action={deleteCompany}>
-                    <input type="hidden" name="id" value={c.id} />
-                    <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                  </form>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      setDeleteError(null);
+                      const fd = new FormData();
+                      fd.append("id", c.id);
+                      const res = await deleteCompany(fd);
+                      if (res?.error) setDeleteError(res.error);
+                    }}
+                  >Delete</Button>
                 </div>
               </td>
             </tr>
@@ -53,5 +62,7 @@ export function CompanyList({ rows }: { rows: Company[] }) {
         )}
       </tbody>
     </table>
+    {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}
+    </div>
   );
 }

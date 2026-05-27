@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { deals } from "@/db/schema";
+import { isFKViolation } from "@/lib/db-errors";
 
 type Stage = "prospect" | "qualified" | "proposal" | "negotiation" | "closed_won" | "closed_lost";
 
@@ -45,11 +46,18 @@ export async function updateDeal(formData: FormData) {
   revalidatePath("/pipeline");
 }
 
-export async function deleteDeal(formData: FormData) {
+export async function deleteDeal(formData: FormData): Promise<{ error: string } | undefined> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  await db.delete(deals).where(eq(deals.id, id));
+  try {
+    await db.delete(deals).where(eq(deals.id, id));
+  } catch (err) {
+    if (isFKViolation(err)) {
+      return { error: "Can't delete: this deal has linked records. Remove those first." };
+    }
+    throw err;
+  }
   revalidatePath("/pipeline");
 }
