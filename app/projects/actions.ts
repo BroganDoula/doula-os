@@ -44,7 +44,7 @@ export async function createEngagement(formData: FormData) {
     updatedBy: userId,
     reviewedAt: new Date(),
   });
-  revalidatePath("/engagements");
+  revalidatePath("/projects");
 }
 
 export async function updateEngagement(formData: FormData) {
@@ -70,7 +70,7 @@ export async function updateEngagement(formData: FormData) {
     companyId, clientId: companyId, name, phase, rateCents,
     weeklyHourCommitment, startedAt, status, notes, updatedBy: userId,
   }).where(eq(engagements.id, id));
-  revalidatePath("/engagements");
+  revalidatePath("/projects");
 }
 
 export async function deleteEngagement(formData: FormData) {
@@ -79,7 +79,7 @@ export async function deleteEngagement(formData: FormData) {
 
   const id = formData.get("id") as string;
   await db.delete(engagements).where(eq(engagements.id, id));
-  revalidatePath("/engagements");
+  revalidatePath("/projects");
 }
 
 // ── Proposals ─────────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ export async function createProposal(formData: FormData) {
   const fileData = Buffer.from(bytes).toString("base64");
 
   await db.insert(proposals).values({ engagementId, clientId, fileName: file.name, fileData, fileMimeType: file.type || null, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }
 
 export async function deleteProposal(formData: FormData) {
@@ -107,7 +107,7 @@ export async function deleteProposal(formData: FormData) {
   const id = formData.get("id") as string;
   const engagementId = formData.get("engagementId") as string;
   await db.delete(proposals).where(eq(proposals.id, id));
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }
 
 // ── Deliverables ──────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export async function createDeliverable(formData: FormData) {
   const dueDate = (formData.get("dueDate") as string) || null;
 
   await db.insert(deliverables).values({ engagementId, proposalId, clientId, title, dueDate, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }
 
 export async function updateDeliverable(formData: FormData) {
@@ -140,7 +140,7 @@ export async function updateDeliverable(formData: FormData) {
   const dueDate = (formData.get("dueDate") as string) || null;
 
   await db.update(deliverables).set({ title, proposalId, dueDate, updatedBy: userId }).where(eq(deliverables.id, id));
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }
 
 export async function deleteDeliverable(formData: FormData) {
@@ -150,7 +150,7 @@ export async function deleteDeliverable(formData: FormData) {
   const id = formData.get("id") as string;
   const engagementId = formData.get("engagementId") as string;
   await db.delete(deliverables).where(eq(deliverables.id, id));
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }
 
 export async function toggleDeliverable(formData: FormData) {
@@ -170,5 +170,5 @@ export async function toggleDeliverable(formData: FormData) {
       updatedBy: userId,
     })
     .where(eq(deliverables.id, id));
-  revalidatePath(`/engagements/${engagementId}`);
+  revalidatePath(`/projects/${engagementId}`);
 }

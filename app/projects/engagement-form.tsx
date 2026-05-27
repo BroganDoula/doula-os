@@ -57,7 +57,7 @@ export function EngagementForm({
       className="border rounded-lg p-4 space-y-4"
     >
       {isEdit && <input type="hidden" name="id" value={defaultValues.id} />}
-      <h2 className="font-medium">{isEdit ? "Edit Engagement" : "New Engagement"}</h2>
+      <h2 className="font-medium">{isEdit ? "Edit Project" : "New Project"}</h2>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
@@ -145,7 +145,7 @@ export function EngagementForm({
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit">{isEdit ? "Save" : "Add Engagement"}</Button>
+        <Button type="submit">{isEdit ? "Save" : "Add Project"}</Button>
         {isEdit && (
           <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
         )}

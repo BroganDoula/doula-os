@@ -50,7 +50,7 @@ export function HoursList({
         <thead>
           <tr className="border-b text-left text-muted-foreground">
             <th className="pb-2 font-medium">Date</th>
-            <th className="pb-2 font-medium">Engagement</th>
+            <th className="pb-2 font-medium">Project</th>
             <th className="pb-2 font-medium">Type</th>
             <th className="pb-2 font-medium">Hours</th>
             <th className="pb-2 font-medium">Notes</th>

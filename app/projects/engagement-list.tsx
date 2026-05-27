@@ -62,7 +62,7 @@ export function EngagementList({
         {rows.length === 0 && (
           <tr>
             <td colSpan={7} className="py-6 text-center text-muted-foreground">
-              No engagements yet.
+              No projects yet.
             </td>
           </tr>
         )}
@@ -80,7 +80,7 @@ export function EngagementList({
           ) : (
             <tr key={e.id} className="border-b">
               <td className="py-2 font-medium">
-                <Link href={`/engagements/${e.id}`} className="hover:underline">{e.name}</Link>
+                <Link href={`/projects/${e.id}`} className="hover:underline">{e.name}</Link>
               </td>
               <td className="py-2 text-muted-foreground">{e.companyName ?? "—"}</td>
               <td className="py-2 text-muted-foreground">{PHASE_LABELS[e.phase] ?? e.phase}</td>

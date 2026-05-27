@@ -67,7 +67,7 @@ export function HoursForm({
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="engagementId">Engagement</Label>
+          <Label htmlFor="engagementId">Project</Label>
           <select
             id="engagementId"
             name="engagementId"

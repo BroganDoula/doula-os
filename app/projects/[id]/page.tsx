@@ -73,8 +73,8 @@ export default async function EngagementDetailPage({
     <div className="max-w-4xl mx-auto p-8 space-y-8">
       {/* Header */}
       <div>
-        <Link href="/engagements" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Engagements
+        <Link href="/projects" className="text-sm text-muted-foreground hover:text-foreground">
+          ← Projects
         </Link>
         <h1 className="text-xl font-semibold mt-2">{engagement.name}</h1>
         <p className="text-sm text-muted-foreground mt-1 space-x-2">

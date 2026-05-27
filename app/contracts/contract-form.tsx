@@ -75,7 +75,7 @@ export function ContractForm({
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="engagementId">Linked Engagement</Label>
+          <Label htmlFor="engagementId">Linked Project</Label>
           <select
             id="engagementId"
             name="engagementId"

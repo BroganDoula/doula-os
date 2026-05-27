@@ -99,7 +99,7 @@ export default async function HoursPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 font-medium">Engagement</th>
+                <th className="pb-2 font-medium">Project</th>
                 <th className="pb-2 font-medium text-right">Committed</th>
                 <th className="pb-2 font-medium text-right">Actual</th>
                 <th className="pb-2 font-medium text-right">Delta</th>
@@ -141,7 +141,7 @@ export default async function HoursPage({
       <section className="space-y-4">
         <form method="GET" className="flex items-end gap-3 flex-wrap">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground block">Engagement</label>
+            <label className="text-xs text-muted-foreground block">Project</label>
             <select
               name="engagementId"
               defaultValue={filterEngagementId}
