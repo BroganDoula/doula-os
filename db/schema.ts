@@ -144,7 +144,8 @@ export const proposals = pgTable("proposals", {
   engagementId: text("engagement_id")
     .notNull()
     .references(() => engagements.id),
-  fileUrl: text("file_url").notNull(),
+  fileData: text("file_data"), // base64-encoded PDF blob
+  fileUrl: text("file_url"),  // reserved for future object storage migration
   fileName: text("file_name").notNull(),
   uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
