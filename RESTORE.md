@@ -1,19 +1,43 @@
 # Restore from Backup
 
-Backups are JSON snapshots of all database tables, committed daily to the `backups` branch of this repo.
+Backups are JSON snapshots of all database tables, committed daily to the `backups` branch of this repo by a GitHub Actions workflow.
 
-## Where backups live
+---
+
+## Prerequisites — add the DATABASE_URL secret
+
+The GitHub Action needs read access to Neon. Add it once:
+
+1. Go to **GitHub repo → Settings → Secrets and variables → Actions**
+2. Click **New repository secret**
+3. Name: `DATABASE_URL`
+4. Value: the **pooled** Neon connection string (from the Neon dashboard → your project → Connection Details → select "Pooled connection")
+5. Click **Add secret**
+
+The daily workflow at `.github/workflows/backup.yml` reads this secret automatically.
+
+---
+
+## Where automated backups live
 
 ```
 git fetch origin backups
 git log origin/backups --oneline   # see all backup commits
 ```
 
-Each commit on the `backups` branch adds or updates one file: `backups/YYYY-MM-DD.json`. The JSON structure is:
+Each commit on the `backups` branch adds one file at the branch root:
+
+```
+manual-2026-05-27T09-00-00.json
+manual-2026-05-28T09-00-00.json
+...
+```
+
+The JSON structure:
 
 ```json
 {
-  "exportedAt": "2026-05-27T03:00:12.000Z",
+  "exportedAt": "2026-05-27T09:00:12.000Z",
   "tables": {
     "companies": [...],
     "contacts":  [...],
@@ -23,17 +47,45 @@ Each commit on the `backups` branch adds or updates one file: `backups/YYYY-MM-D
 }
 ```
 
+Backups older than 30 days are pruned automatically by the workflow.
+
+---
+
+## Trigger a manual backup
+
+**Via GitHub Actions (no local setup needed):**
+
+1. Go to **GitHub repo → Actions → Daily Backup**
+2. Click **Run workflow → Run workflow**
+3. The new backup commits to the `backups` branch within ~1 minute
+
+**Locally (requires `.env.local` with `DATABASE_URL`):**
+
+```bash
+npm run backup
+```
+
+This writes to `backups/manual-{timestamp}.json` in the working tree. It does **not** push to the `backups` branch — copy the file manually if you want to preserve it, or use the GitHub Actions trigger above.
+
+---
+
 ## Fetch a specific backup file
 
 ```bash
 git fetch origin backups
-git show origin/backups:backups/2026-05-27.json > restore-data.json
+# List available files
+git ls-tree --name-only origin/backups
+# Extract a specific file
+git show origin/backups:manual-2026-05-27T09-00-00.json > restore-data.json
 ```
+
+---
 
 ## Restore procedure
 
-> Before restoring: take a fresh manual backup first.
-> ```
+> **Before restoring: take a fresh manual backup first** so you can undo if something goes wrong.
+>
+> ```bash
 > npm run backup
 > ```
 
@@ -45,7 +97,7 @@ node -e "const d=require('./restore-data.json'); Object.entries(d.tables).forEac
 
 ### 2. Truncate and re-insert (destructive — replaces all data)
 
-Create a one-off restore script at `scripts/restore.mjs` (do not commit this — it is a one-time operation):
+Create a one-off restore script at `scripts/restore.mjs` (do not commit — it is a one-time operation):
 
 ```js
 import { readFileSync } from "fs";
@@ -90,28 +142,23 @@ Run it:
 node scripts/restore.mjs
 ```
 
-Delete the script and the `restore-data.json` file afterward.
+Delete `scripts/restore.mjs` and `restore-data.json` afterward.
 
 ### 3. Partial restore (single table)
 
 To restore only one table (e.g., `deals`) without touching others, extract just that key from the JSON and insert only those rows — omit the `TRUNCATE` loop and target a single table in the insert loop.
 
-## Manual ad-hoc backup
-
-Run before any risky migration or bulk delete:
-
-```bash
-npm run backup
-```
-
-This exports the current DB state and pushes it to `origin/backups` immediately.
+---
 
 ## Neon point-in-time recovery (alternative)
 
 Neon Pro accounts include point-in-time restore from the Neon dashboard — no code required. If available, prefer this for faster recovery.
 
+---
+
 ## Notes
 
-- `proposals.file_data` contains base64-encoded PDF blobs. These are included in the backup and will be restored correctly by the script above.
-- Backups are retained for 30 days. The daily cron prunes files older than that from the `backups` branch automatically.
-- The `backups/` directory is gitignored on `main` so local export files never pollute commits.
+- `contracts.file_data`, `proposals.file_data`, `ndas.file_data` contain base64-encoded file blobs. These are included in the backup and are restored correctly by the script above.
+- Backups are retained for 30 days. The daily cron prunes files older than that automatically.
+- The `backups/` directory is gitignored on `main` so local export files never appear in commits on main.
+- The `backups` branch is an orphan branch — it has no shared history with `main`.

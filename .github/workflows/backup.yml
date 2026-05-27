@@ -2,8 +2,8 @@ name: Daily Backup
 
 on:
   schedule:
-    - cron: "0 3 * * *" # 3am UTC every day
-  workflow_dispatch: # allow manual trigger
+    - cron: "0 9 * * *" # 09:00 UTC = 4am ET (5am ET winter)
+  workflow_dispatch: # allow manual trigger from Actions tab
 
 permissions:
   contents: write # needed to push to the backups branch
@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # need full history to create/access backups branch
+          fetch-depth: 0 # full history so we can access / create the backups branch
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
@@ -24,8 +24,49 @@ jobs:
 
       - run: npm ci
 
-      - name: Run backup
-        run: node scripts/backup.mjs
+      - name: Run backup script
+        run: npx tsx scripts/backup-now.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          CI: "true"
+
+      - name: Commit backup to backups branch
+        run: |
+          # Find the file just written by the script
+          BACKUP_FILE=$(ls backups/manual-*.json | sort | tail -1)
+          BACKUP_NAME=$(basename "$BACKUP_FILE")
+
+          # Stash it outside the working tree before we switch branches
+          cp "$BACKUP_FILE" "/tmp/$BACKUP_NAME"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Switch to backups branch, creating it as an orphan on first run
+          if git ls-remote --exit-code --heads origin backups > /dev/null 2>&1; then
+            git fetch origin backups
+            git checkout -b backups origin/backups
+          else
+            git checkout --orphan backups
+            git rm -rf . --quiet
+          fi
+
+          # Copy new backup into the branch root
+          cp "/tmp/$BACKUP_NAME" "$BACKUP_NAME"
+
+          # Prune files older than 30 days, using the timestamp embedded in the filename
+          # Filenames: manual-YYYY-MM-DDTHH-MM-SS.json — lexicographic sort matches chronological order
+          CUTOFF=$(date -d '30 days ago' +%Y-%m-%dT%H-%M-%S)
+          for f in manual-*.json; do
+            [ -f "$f" ] || continue
+            TS="${f#manual-}"
+            TS="${TS%.json}"
+            if [[ "$TS" < "$CUTOFF" ]]; then
+              git rm "$f" 2>/dev/null || rm -f "$f"
+              echo "Pruned: $f"
+            fi
+          done
+
+          git add "$BACKUP_NAME"
+          # Skip empty commits (e.g. re-running manually within the same second)
+          git diff --staged --quiet || git commit -m "backup: $BACKUP_NAME"
+          git push origin backups
