@@ -5,6 +5,18 @@ Single user. Not marketable. Optimized for the founder's daily workflow.
 
 ---
 
+## Guiding Principles
+
+**INGESTION-HEAVY, CURATION-LIGHT.** The product goal is to save the founder time by absorbing data with minimal manual effort. Primary data entry should be bulk ingestion (drag-and-drop file uploads, calendar pulls, integration syncs from Xero/Harvest/Gmail/etc.) followed by a review/approve queue. Manual forms exist for corrections and edge cases, not as the main workflow.
+
+Design implications:
+- Every entity that can be ingested from documents or external systems carries source seams (`sourceDocumentId`, `externalIds`, `importedFrom`, `reviewedAt`) so manual vs. ingested vs. integration-sourced records are distinguishable.
+- Every entity should expose a "review queue" lens: records pending human confirmation before they count as authoritative (`reviewedAt IS NULL`).
+- New features should be evaluated by "does this reduce typing" before "does this add capability".
+- The Monday brief and nightly agent should flag missing data the founder would otherwise have to remember to enter.
+
+---
+
 ## Architecture
 
 - **Hosting:** Vercel, deployed at `app.doula-studios.com` (separate project from portfolio site)
@@ -128,6 +140,10 @@ Add only items that Tranche 1 usage proves are needed.
 Features promoted from Tranche 2 consideration based on usage or design decisions made during Tranche 1 build.
 
 - **Auto-extract deliverables from uploaded proposal files.** Use Claude API with document input. User reviews and approves extracted items before they're committed. Support PDF natively; convert PPT/PPTX to PDF first (LibreOffice headless or similar) then run the same pipeline. Same extraction pipeline can later pull SOW terms for scope-creep detection.
+
+- **Calendar-derived time analytics.** Use Google Calendar events to estimate weekly time allocation per engagement (events tagged or matched to a client) and per BD/admin/driving buckets. Cross-reference with manual `hours_entries` to flag undercounting. Goal: zero manual hour-logging for entries calendar already captures.
+
+- **Bulk ingestion landing page.** A single `/inbox` route that accepts drag-and-drop of any document type (PDF, DOCX, images, .ics, .csv exports). Files land in a `documents` table with status `pending`, get auto-classified and field-extracted via Claude API, then surface in a review queue. One pipeline serves NDAs, contracts, proposals, invoices, receipts, business cards (OCR for contacts), and future doc types.
 
 ---
 
