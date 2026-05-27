@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\\\\Broga\\\\code\\\\doula-os\" -Recurse -Force | Where-Object { $_.FullName -notmatch \"node_modules|\\\\.git|\\\\.next\" } | Select-Object FullName | Format-Table -AutoSize)"
+    ]
+  }
+}
