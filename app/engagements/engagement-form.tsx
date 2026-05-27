@@ -8,12 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { createEngagement } from "./actions";
 
 const PHASE_OPTIONS = [
-  { value: 1, label: "1 — Definition" },
-  { value: 2, label: "2 — Works-Like" },
-  { value: 3, label: "3 — Looks-Works-Like" },
-  { value: 4, label: "4 — Design Package" },
-  { value: 5, label: "5 — RFQ" },
-  { value: 6, label: "6 — Manufacture" },
+  { value: "definition",        label: "1 — Definition" },
+  { value: "works_like",        label: "2 — Works-Like" },
+  { value: "looks_works_like",  label: "3 — Looks-Works-Like" },
+  { value: "design_package",    label: "4 — Design Package" },
+  { value: "rfq",               label: "5 — RFQ" },
+  { value: "manufacture",       label: "6 — Manufacture" },
 ];
 
 type Company = { id: string; name: string };
@@ -59,7 +59,7 @@ export function EngagementForm({ companies }: { companies: Company[] }) {
           <select
             id="phase"
             name="phase"
-            defaultValue={1}
+            defaultValue="definition"
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             {PHASE_OPTIONS.map((p) => (

@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local backup exports (backups live on the backups branch, not main)
 /backups/
+
+# drizzle-kit generated migration files (we use db:push, not db:migrate)
+/drizzle/

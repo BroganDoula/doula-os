@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, isNull, lte } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { db } from "@/db";
 import { hoursEntries, engagements } from "@/db/schema";
@@ -74,6 +74,7 @@ export default async function HoursPage({
         weeklyHourCommitment: engagements.weeklyHourCommitment,
       })
       .from(engagements)
+      .where(isNull(engagements.deletedAt))
       .orderBy(engagements.name),
     db
       .select({ engagementId: hoursEntries.engagementId, hours: hoursEntries.hours })

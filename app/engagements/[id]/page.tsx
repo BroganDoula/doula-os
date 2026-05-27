@@ -3,21 +3,20 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
 import { engagements, proposals, deliverables, companies } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { ProposalUploadForm } from "./proposal-upload-form";
 import { DeliverableAddForm } from "./deliverable-add-form";
 import { deleteProposal, deleteDeliverable, toggleDeliverable } from "../actions";
 
-const PHASE_LABELS = [
-  "",
-  "Definition",
-  "Works-Like",
-  "Looks-Works-Like",
-  "Design Package",
-  "RFQ",
-  "Manufacture",
-];
+const PHASE_LABELS: Record<string, string> = {
+  definition:       "1 — Definition",
+  works_like:       "2 — Works-Like",
+  looks_works_like: "3 — Looks-Works-Like",
+  design_package:   "4 — Design Package",
+  rfq:              "5 — RFQ",
+  manufacture:      "6 — Manufacture",
+};
 
 export default async function EngagementDetailPage({
   params,
@@ -79,7 +78,7 @@ export default async function EngagementDetailPage({
         <p className="text-sm text-muted-foreground mt-1 space-x-2">
           <span>{engagement.companyName}</span>
           <span>·</span>
-          <span>Phase {engagement.phase} — {PHASE_LABELS[engagement.phase]}</span>
+          <span>{PHASE_LABELS[engagement.phase] ?? engagement.phase}</span>
           <span>·</span>
           <span className="capitalize">{engagement.status}</span>
           {engagement.rateCents && (

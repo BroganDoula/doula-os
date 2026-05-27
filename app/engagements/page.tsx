@@ -3,20 +3,19 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
 import { engagements, companies } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { EngagementForm } from "./engagement-form";
 import { deleteEngagement } from "./actions";
 
-const PHASE_LABELS = [
-  "",
-  "Definition",
-  "Works-Like",
-  "Looks-Works-Like",
-  "Design Package",
-  "RFQ",
-  "Manufacture",
-];
+const PHASE_LABELS: Record<string, string> = {
+  definition:       "1 — Definition",
+  works_like:       "2 — Works-Like",
+  looks_works_like: "3 — Looks-Works-Like",
+  design_package:   "4 — Design Package",
+  rfq:              "5 — RFQ",
+  manufacture:      "6 — Manufacture",
+};
 
 const STATUS_COLORS: Record<string, string> = {
   active: "text-green-600",
@@ -41,6 +40,7 @@ export default async function EngagementsPage() {
       })
       .from(engagements)
       .leftJoin(companies, eq(engagements.companyId, companies.id))
+      .where(isNull(engagements.deletedAt))
       .orderBy(engagements.createdAt),
     db.select({ id: companies.id, name: companies.name }).from(companies).orderBy(companies.name),
   ]);
@@ -80,7 +80,7 @@ export default async function EngagementsPage() {
               </td>
               <td className="py-2 text-muted-foreground">{e.companyName ?? "—"}</td>
               <td className="py-2 text-muted-foreground">
-                {e.phase} — {PHASE_LABELS[e.phase] ?? ""}
+                {PHASE_LABELS[e.phase] ?? e.phase}
               </td>
               <td className={`py-2 font-medium capitalize ${STATUS_COLORS[e.status] ?? ""}`}>
                 {e.status}

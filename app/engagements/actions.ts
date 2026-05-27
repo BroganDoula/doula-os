@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
-import { engagements, proposals, deliverables } from "@/db/schema";
+import { engagements, proposals, deliverables, engagementPhaseEnum } from "@/db/schema";
+
+type Phase = typeof engagementPhaseEnum.enumValues[number];
 
 // ── Engagements ───────────────────────────────────────────────────────────────
 
@@ -18,7 +20,7 @@ export async function createEngagement(formData: FormData) {
   const name = (formData.get("name") as string).trim();
   if (!name) throw new Error("Name is required");
 
-  const phase = parseInt(formData.get("phase") as string, 10) || 1;
+  const phase = ((formData.get("phase") as string) || "definition") as Phase;
   const rateRaw = (formData.get("rate") as string).trim();
   const rateCents = rateRaw ? Math.round(parseFloat(rateRaw) * 100) : null;
   const weeklyHoursRaw = (formData.get("weeklyHours") as string).trim();
