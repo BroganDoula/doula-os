@@ -371,6 +371,7 @@ export const ndas = pgTable(
     fileData: text("file_data"),
     fileUrl: text("file_url"),
     fileName: text("file_name"),
+    fileMimeType: text("file_mime_type"),
     signedDate: date("signed_date"),
     expirationDate: date("expiration_date"),
     notes: text("notes"),
