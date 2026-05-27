@@ -87,8 +87,8 @@ export function CompanyContactsSection({
                   <div className="flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
                     <DeleteConfirm
-                      title="Delete contact?"
-                      description={`This will permanently delete ${c.name}.`}
+                      title="Archive contact?"
+                      description={`This will hide ${c.name}. You can restore it from the Archived view.`}
                       onConfirm={async () => {
                         setDeleteErrors((prev) => { const n = { ...prev }; delete n[c.id]; return n; });
                         const fd = new FormData();

@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { deals, companies, contacts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { DealForm } from "./deal-form";
 import { DealList } from "./deal-list";
 
@@ -28,11 +28,14 @@ export default async function PipelinePage() {
       .from(deals)
       .leftJoin(companies, eq(deals.companyId, companies.id))
       .leftJoin(contacts, eq(deals.contactId, contacts.id))
+      .where(isNull(deals.deletedAt))
       .orderBy(deals.createdAt),
-    db.select({ id: companies.id, name: companies.name }).from(companies).orderBy(companies.name),
+    db.select({ id: companies.id, name: companies.name }).from(companies)
+      .where(isNull(companies.deletedAt)).orderBy(companies.name),
     db
       .select({ id: contacts.id, name: contacts.name, companyId: contacts.companyId })
       .from(contacts)
+      .where(isNull(contacts.deletedAt))
       .orderBy(contacts.name),
   ]);
 

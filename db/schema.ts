@@ -110,6 +110,7 @@ export const companies = pgTable("companies", {
   reviewedAt: timestamp("reviewed_at"),
   tags: jsonb("tags").$type<string[]>().default([]),
   externalIds: jsonb("external_ids").$type<Record<string, string>>().default({}),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdateFn(() => new Date()),
 });
@@ -275,6 +276,7 @@ export const deliverables = pgTable(
     createdBy: text("created_by"),
     updatedBy: text("updated_by"),
     reviewedAt: timestamp("reviewed_at"),
+    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdateFn(() => new Date()),
   },

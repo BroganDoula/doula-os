@@ -109,8 +109,8 @@ export function DealList({
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(d.id)}>Edit</Button>
                   <DeleteConfirm
-                    title="Delete lead?"
-                    description={`This will permanently delete ${STAGE_LABELS[d.stage] ?? d.stage}${d.companyName ? ` — ${d.companyName}` : ""}.`}
+                    title="Archive lead?"
+                    description={`This will hide this lead${d.companyName ? ` — ${d.companyName}` : ""}. You can restore it from the Archived view.`}
                     onConfirm={async () => {
                       setDeleteErrors((prev) => { const n = { ...prev }; delete n[d.id]; return n; });
                       const fd = new FormData();

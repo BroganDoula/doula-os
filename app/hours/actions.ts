@@ -68,6 +68,21 @@ export async function deleteHoursEntry(formData: FormData) {
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  await db.delete(hoursEntries).where(eq(hoursEntries.id, id));
+  await db.update(hoursEntries).set({ deletedAt: new Date() }).where(eq(hoursEntries.id, id));
   revalidatePath("/hours");
+}
+
+export async function restoreHoursEntry(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const [row] = await db
+    .select({ engagementId: hoursEntries.engagementId })
+    .from(hoursEntries).where(eq(hoursEntries.id, id)).limit(1);
+
+  await db.update(hoursEntries).set({ deletedAt: null }).where(eq(hoursEntries.id, id));
+  revalidatePath("/hours");
+  revalidatePath("/archived");
+  if (row?.engagementId) revalidatePath(`/projects/${row.engagementId}`);
 }

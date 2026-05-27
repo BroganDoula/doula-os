@@ -39,6 +39,7 @@ export default async function HoursPage({
   const filterEngagementId = filters.engagementId ?? "";
 
   const logConditions = [
+    isNull(hoursEntries.deletedAt),
     filterFrom ? gte(hoursEntries.date, filterFrom) : undefined,
     filterTo ? lte(hoursEntries.date, filterTo) : undefined,
     filterEngagementId ? eq(hoursEntries.engagementId, filterEngagementId) : undefined,
@@ -72,7 +73,7 @@ export default async function HoursPage({
     db
       .select({ engagementId: hoursEntries.engagementId, hours: hoursEntries.hours })
       .from(hoursEntries)
-      .where(and(gte(hoursEntries.date, week.from), lte(hoursEntries.date, week.to))),
+      .where(and(isNull(hoursEntries.deletedAt), gte(hoursEntries.date, week.from), lte(hoursEntries.date, week.to))),
   ]);
 
   const weeklyActuals: Record<string, number> = {};

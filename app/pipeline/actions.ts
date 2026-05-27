@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { deals } from "@/db/schema";
-import { isFKViolation } from "@/lib/db-errors";
 
 type Stage = "prospect" | "qualified" | "proposal" | "negotiation" | "closed_won" | "closed_lost";
 
@@ -51,13 +50,22 @@ export async function deleteDeal(formData: FormData): Promise<{ error: string } 
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  try {
-    await db.delete(deals).where(eq(deals.id, id));
-  } catch (err) {
-    if (isFKViolation(err)) {
-      return { error: "Can't delete: this deal has linked records. Remove those first." };
-    }
-    throw err;
-  }
+  await db.update(deals).set({ deletedAt: new Date() }).where(eq(deals.id, id));
   revalidatePath("/pipeline");
+  return undefined;
+}
+
+export async function restoreDeal(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const [row] = await db
+    .select({ companyId: deals.companyId })
+    .from(deals).where(eq(deals.id, id)).limit(1);
+
+  await db.update(deals).set({ deletedAt: null }).where(eq(deals.id, id));
+  revalidatePath("/pipeline");
+  revalidatePath("/archived");
+  if (row?.companyId) revalidatePath(`/companies/${row.companyId}`);
 }

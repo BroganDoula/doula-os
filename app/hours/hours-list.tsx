@@ -89,8 +89,8 @@ export function HoursList({
                   <div className="flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => setEditingId(r.id)}>Edit</Button>
                     <DeleteConfirm
-                      title="Delete hours entry?"
-                      description={`This will permanently delete ${r.date}${r.engagementName ? ` · ${r.engagementName}` : ""} (${r.hours.toFixed(1)}h).`}
+                      title="Archive hours entry?"
+                      description={`This will hide ${r.date}${r.engagementName ? ` · ${r.engagementName}` : ""} (${r.hours.toFixed(1)}h). You can restore it from the Archived view.`}
                       onConfirm={async () => {
                         const fd = new FormData();
                         fd.append("id", r.id);

@@ -97,7 +97,7 @@ export default async function ProjectDetailPage({
         dueDate: deliverables.dueDate,
       })
       .from(deliverables)
-      .where(eq(deliverables.engagementId, id))
+      .where(and(eq(deliverables.engagementId, id), isNull(deliverables.deletedAt)))
       .orderBy(deliverables.createdAt),
 
     db
@@ -127,7 +127,7 @@ export default async function ProjectDetailPage({
     db
       .select({ hours: hoursEntries.hours, date: hoursEntries.date })
       .from(hoursEntries)
-      .where(eq(hoursEntries.engagementId, id)),
+      .where(and(eq(hoursEntries.engagementId, id), isNull(hoursEntries.deletedAt))),
 
     db
       .select({
@@ -165,7 +165,7 @@ export default async function ProjectDetailPage({
         createdAt: hoursEntries.createdAt,
       })
       .from(hoursEntries)
-      .where(eq(hoursEntries.engagementId, id))
+      .where(and(eq(hoursEntries.engagementId, id), isNull(hoursEntries.deletedAt)))
       .orderBy(desc(hoursEntries.createdAt))
       .limit(3),
 

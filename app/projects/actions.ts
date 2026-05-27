@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { engagements, proposals, deliverables, engagementPhaseEnum } from "@/db/schema";
-import { isFKViolation } from "@/lib/db-errors";
 
 type Phase = typeof engagementPhaseEnum.enumValues[number];
 type Status = "active" | "paused" | "complete";
@@ -152,8 +151,22 @@ export async function deleteDeliverable(formData: FormData) {
 
   const id = formData.get("id") as string;
   const engagementId = formData.get("engagementId") as string;
-  await db.delete(deliverables).where(eq(deliverables.id, id));
+  await db.update(deliverables).set({ deletedAt: new Date() }).where(eq(deliverables.id, id));
   revalidatePath(`/projects/${engagementId}`);
+}
+
+export async function restoreDeliverable(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const [row] = await db
+    .select({ engagementId: deliverables.engagementId })
+    .from(deliverables).where(eq(deliverables.id, id)).limit(1);
+
+  await db.update(deliverables).set({ deletedAt: null }).where(eq(deliverables.id, id));
+  revalidatePath("/archived");
+  if (row?.engagementId) revalidatePath(`/projects/${row.engagementId}`);
 }
 
 export async function toggleDeliverable(formData: FormData) {

@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { contacts } from "@/db/schema";
-import { isFKViolation } from "@/lib/db-errors";
 
 export async function createContact(formData: FormData) {
   const { userId } = await auth();
@@ -55,14 +54,23 @@ export async function deleteContact(formData: FormData): Promise<{ error: string
 
   const id = formData.get("id") as string;
   const companyId = (formData.get("companyId") as string) || null;
-  try {
-    await db.delete(contacts).where(eq(contacts.id, id));
-  } catch (err) {
-    if (isFKViolation(err)) {
-      return { error: "Can't delete: this contact has linked records. Remove those first." };
-    }
-    throw err;
-  }
+  await db.update(contacts).set({ deletedAt: new Date() }).where(eq(contacts.id, id));
   revalidatePath("/contacts");
   if (companyId) revalidatePath(`/companies/${companyId}`);
+  return undefined;
+}
+
+export async function restoreContact(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const [row] = await db
+    .select({ companyId: contacts.companyId })
+    .from(contacts).where(eq(contacts.id, id)).limit(1);
+
+  await db.update(contacts).set({ deletedAt: null }).where(eq(contacts.id, id));
+  revalidatePath("/contacts");
+  revalidatePath("/archived");
+  if (row?.companyId) revalidatePath(`/companies/${row.companyId}`);
 }

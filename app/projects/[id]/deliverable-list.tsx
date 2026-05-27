@@ -98,8 +98,8 @@ export function DeliverableList({
                   Edit
                 </Button>
                 <DeleteConfirm
-                  title="Delete deliverable?"
-                  description={`This will permanently delete "${d.title}".`}
+                  title="Archive deliverable?"
+                  description={`This will hide "${d.title}". You can restore it from the Archived view.`}
                   onConfirm={async () => {
                     const fd = new FormData();
                     fd.append("id", d.id);

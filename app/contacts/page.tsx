@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { contacts, companies } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull } from "drizzle-orm";
 import { ContactForm } from "./contact-form";
 import { ContactList } from "./contact-list";
 
@@ -24,8 +24,9 @@ export default async function ContactsPage() {
       })
       .from(contacts)
       .leftJoin(companies, eq(contacts.companyId, companies.id))
+      .where(isNull(contacts.deletedAt))
       .orderBy(contacts.name),
-    db.select().from(companies).orderBy(companies.name),
+    db.select().from(companies).where(isNull(companies.deletedAt)).orderBy(companies.name),
   ]);
 
   return (
