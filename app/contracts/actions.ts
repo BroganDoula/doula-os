@@ -36,6 +36,9 @@ export async function createContract(formData: FormData) {
     fileName: file.name,
     fileData,
     fileMimeType: file.type || null,
+    createdBy: userId,
+    updatedBy: userId,
+    reviewedAt: new Date(),
     ...parseContractFields(formData),
   });
   revalidatePath("/contracts");
@@ -62,6 +65,7 @@ export async function updateContract(formData: FormData) {
     companyId,
     clientId: companyId,
     ...fileFields,
+    updatedBy: userId,
     ...parseContractFields(formData),
   }).where(eq(contracts.id, id));
   revalidatePath("/contracts");

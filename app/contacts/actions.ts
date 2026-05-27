@@ -20,7 +20,7 @@ export async function createContact(formData: FormData) {
   const companyId = (formData.get("companyId") as string) || null;
   const clientId = companyId;
 
-  await db.insert(contacts).values({ name, email, phone, role, notes, companyId, clientId });
+  await db.insert(contacts).values({ name, email, phone, role, notes, companyId, clientId, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath("/contacts");
 }
 
@@ -41,6 +41,7 @@ export async function updateContact(formData: FormData) {
     notes: (formData.get("notes") as string).trim() || null,
     companyId,
     clientId: companyId,
+    updatedBy: userId,
   }).where(eq(contacts.id, id));
   revalidatePath("/contacts");
 }

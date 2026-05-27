@@ -40,6 +40,9 @@ export async function createEngagement(formData: FormData) {
     startedAt,
     status,
     notes,
+    createdBy: userId,
+    updatedBy: userId,
+    reviewedAt: new Date(),
   });
   revalidatePath("/engagements");
 }
@@ -65,7 +68,7 @@ export async function updateEngagement(formData: FormData) {
 
   await db.update(engagements).set({
     companyId, clientId: companyId, name, phase, rateCents,
-    weeklyHourCommitment, startedAt, status, notes,
+    weeklyHourCommitment, startedAt, status, notes, updatedBy: userId,
   }).where(eq(engagements.id, id));
   revalidatePath("/engagements");
 }
@@ -93,7 +96,7 @@ export async function createProposal(formData: FormData) {
   const bytes = await file.arrayBuffer();
   const fileData = Buffer.from(bytes).toString("base64");
 
-  await db.insert(proposals).values({ engagementId, clientId, fileName: file.name, fileData, fileMimeType: file.type || null });
+  await db.insert(proposals).values({ engagementId, clientId, fileName: file.name, fileData, fileMimeType: file.type || null, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath(`/engagements/${engagementId}`);
 }
 
@@ -121,7 +124,7 @@ export async function createDeliverable(formData: FormData) {
   const clientId = formData.get("clientId") as string;
   const dueDate = (formData.get("dueDate") as string) || null;
 
-  await db.insert(deliverables).values({ engagementId, proposalId, clientId, title, dueDate });
+  await db.insert(deliverables).values({ engagementId, proposalId, clientId, title, dueDate, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath(`/engagements/${engagementId}`);
 }
 
@@ -136,7 +139,7 @@ export async function updateDeliverable(formData: FormData) {
   const proposalId = (formData.get("proposalId") as string) || null;
   const dueDate = (formData.get("dueDate") as string) || null;
 
-  await db.update(deliverables).set({ title, proposalId, dueDate }).where(eq(deliverables.id, id));
+  await db.update(deliverables).set({ title, proposalId, dueDate, updatedBy: userId }).where(eq(deliverables.id, id));
   revalidatePath(`/engagements/${engagementId}`);
 }
 
@@ -164,6 +167,7 @@ export async function toggleDeliverable(formData: FormData) {
     .set({
       status: newStatus as "pending" | "in_progress" | "complete",
       completedAt: newStatus === "complete" ? new Date() : null,
+      updatedBy: userId,
     })
     .where(eq(deliverables.id, id));
   revalidatePath(`/engagements/${engagementId}`);

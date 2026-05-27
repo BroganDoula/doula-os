@@ -16,7 +16,7 @@ export async function createCompany(formData: FormData) {
   const website = (formData.get("website") as string).trim() || null;
   const notes = (formData.get("notes") as string).trim() || null;
 
-  await db.insert(companies).values({ name, website, notes });
+  await db.insert(companies).values({ name, website, notes, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath("/companies");
 }
 
@@ -32,6 +32,7 @@ export async function updateCompany(formData: FormData) {
     name,
     website: (formData.get("website") as string).trim() || null,
     notes: (formData.get("notes") as string).trim() || null,
+    updatedBy: userId,
   }).where(eq(companies.id, id));
   revalidatePath("/companies");
 }

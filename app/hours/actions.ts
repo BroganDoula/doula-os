@@ -31,7 +31,7 @@ export async function createHoursEntry(formData: FormData) {
     clientId = eng[0]?.clientId ?? null;
   }
 
-  await db.insert(hoursEntries).values({ date, hours, type, engagementId, clientId, notes });
+  await db.insert(hoursEntries).values({ date, hours, type, engagementId, clientId, notes, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath("/hours");
 }
 
@@ -59,7 +59,7 @@ export async function updateHoursEntry(formData: FormData) {
     clientId = eng[0]?.clientId ?? null;
   }
 
-  await db.update(hoursEntries).set({ date, hours, type, engagementId, clientId, notes }).where(eq(hoursEntries.id, id));
+  await db.update(hoursEntries).set({ date, hours, type, engagementId, clientId, notes, updatedBy: userId }).where(eq(hoursEntries.id, id));
   revalidatePath("/hours");
 }
 

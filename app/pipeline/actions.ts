@@ -29,7 +29,7 @@ export async function createDeal(formData: FormData) {
   const { companyId, ...rest } = parseDealFields(formData);
   if (!companyId) throw new Error("Company is required");
 
-  await db.insert(deals).values({ companyId, clientId: companyId, ...rest });
+  await db.insert(deals).values({ companyId, clientId: companyId, ...rest, createdBy: userId, updatedBy: userId, reviewedAt: new Date() });
   revalidatePath("/pipeline");
 }
 
@@ -41,7 +41,7 @@ export async function updateDeal(formData: FormData) {
   const { companyId, ...rest } = parseDealFields(formData);
   if (!companyId) throw new Error("Company is required");
 
-  await db.update(deals).set({ companyId, clientId: companyId, ...rest }).where(eq(deals.id, id));
+  await db.update(deals).set({ companyId, clientId: companyId, ...rest, updatedBy: userId }).where(eq(deals.id, id));
   revalidatePath("/pipeline");
 }
 
