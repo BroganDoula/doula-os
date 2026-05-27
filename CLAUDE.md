@@ -123,6 +123,14 @@ Add only items that Tranche 1 usage proves are needed.
 
 ---
 
+## Tranche 2 Candidates
+
+Features promoted from Tranche 2 consideration based on usage or design decisions made during Tranche 1 build.
+
+- **Auto-extract deliverables from uploaded proposal files.** Use Claude API with document input. User reviews and approves extracted items before they're committed. Support PDF natively; convert PPT/PPTX to PDF first (LibreOffice headless or similar) then run the same pipeline. Same extraction pipeline can later pull SOW terms for scope-creep detection.
+
+---
+
 ## Data Model (sketch — refine before building)
 
 Core entities:
