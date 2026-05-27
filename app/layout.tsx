@@ -34,6 +34,7 @@ export default function RootLayout({
             <span className="font-semibold text-foreground mr-2">Doula OS</span>
             <Link href="/companies" className="hover:text-foreground transition-colors">Companies</Link>
             <Link href="/contacts" className="hover:text-foreground transition-colors">Contacts</Link>
+            <Link href="/deals" className="hover:text-foreground transition-colors">Pipeline</Link>
           </nav>
           {children}
         </body>
