@@ -22,7 +22,7 @@ jobs:
           node-version: 20
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
 
       - name: Run backup script
         run: npx tsx scripts/backup-now.ts
