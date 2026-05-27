@@ -1,0 +1,31 @@
+name: Daily Backup
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # 3am UTC every day
+  workflow_dispatch: # allow manual trigger
+
+permissions:
+  contents: write # needed to push to the backups branch
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need full history to create/access backups branch
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run backup
+        run: node scripts/backup.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          CI: "true"
