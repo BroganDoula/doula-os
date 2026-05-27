@@ -20,6 +20,22 @@ export async function createCompany(formData: FormData) {
   revalidatePath("/companies");
 }
 
+export async function updateCompany(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const name = (formData.get("name") as string).trim();
+  if (!name) throw new Error("Name is required");
+
+  await db.update(companies).set({
+    name,
+    website: (formData.get("website") as string).trim() || null,
+    notes: (formData.get("notes") as string).trim() || null,
+  }).where(eq(companies.id, id));
+  revalidatePath("/companies");
+}
+
 export async function deleteCompany(formData: FormData) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

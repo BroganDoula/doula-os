@@ -5,17 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createDeal } from "./actions";
+import { createDeal, updateDeal } from "./actions";
 
 type Company = { id: string; name: string };
 type Contact = { id: string; name: string; companyId: string | null };
+
+type DefaultValues = {
+  id: string;
+  companyId: string;
+  contactId: string | null;
+  stage: string;
+  closeWindowMonths: number | null;
+  dealSizeCents: number | null;
+  nextSteps: string | null;
+  referralSource: string | null;
+  notes: string | null;
+};
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -29,22 +34,33 @@ const STAGE_LABELS: Record<string, string> = {
 export function DealForm({
   companies,
   contacts,
+  defaultValues,
+  onCancel,
 }: {
   companies: Company[];
   contacts: Contact[];
+  defaultValues?: DefaultValues;
+  onCancel?: () => void;
 }) {
   const ref = useRef<HTMLFormElement>(null);
+  const isEdit = !!defaultValues;
 
   return (
     <form
       ref={ref}
       action={async (formData) => {
-        await createDeal(formData);
-        ref.current?.reset();
+        if (isEdit) {
+          await updateDeal(formData);
+        } else {
+          await createDeal(formData);
+          ref.current?.reset();
+        }
+        onCancel?.();
       }}
       className="border rounded-lg p-4 space-y-4"
     >
-      <h2 className="font-medium">New Deal</h2>
+      {isEdit && <input type="hidden" name="id" value={defaultValues.id} />}
+      <h2 className="font-medium">{isEdit ? "Edit Deal" : "New Deal"}</h2>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
@@ -53,13 +69,12 @@ export function DealForm({
             id="companyId"
             name="companyId"
             required
+            defaultValue={defaultValues?.companyId ?? ""}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">Select company…</option>
             {companies.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
@@ -69,13 +84,12 @@ export function DealForm({
           <select
             id="contactId"
             name="contactId"
+            defaultValue={defaultValues?.contactId ?? ""}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">No contact</option>
             {contacts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
+              <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>
         </div>
@@ -87,13 +101,11 @@ export function DealForm({
           <select
             id="stage"
             name="stage"
-            defaultValue="prospect"
+            defaultValue={defaultValues?.stage ?? "prospect"}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             {Object.entries(STAGE_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
         </div>
@@ -103,6 +115,7 @@ export function DealForm({
           <select
             id="closeWindowMonths"
             name="closeWindowMonths"
+            defaultValue={defaultValues?.closeWindowMonths?.toString() ?? ""}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">Unknown</option>
@@ -121,6 +134,7 @@ export function DealForm({
             min="0"
             step="100"
             placeholder="25000"
+            defaultValue={defaultValues?.dealSizeCents != null ? defaultValues.dealSizeCents / 100 : ""}
           />
         </div>
       </div>
@@ -128,21 +142,26 @@ export function DealForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <Label htmlFor="nextSteps">Next Steps</Label>
-          <Input id="nextSteps" name="nextSteps" placeholder="Send proposal by Friday" />
+          <Input id="nextSteps" name="nextSteps" placeholder="Send proposal by Friday" defaultValue={defaultValues?.nextSteps ?? ""} />
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="referralSource">Referral Source</Label>
-          <Input id="referralSource" name="referralSource" placeholder="John at Acme" />
+          <Input id="referralSource" name="referralSource" placeholder="John at Acme" defaultValue={defaultValues?.referralSource ?? ""} />
         </div>
       </div>
 
       <div className="space-y-1">
         <Label htmlFor="notes">Notes</Label>
-        <Textarea id="notes" name="notes" rows={2} placeholder="Context, constraints, history…" />
+        <Textarea id="notes" name="notes" rows={2} placeholder="Context, constraints, history…" defaultValue={defaultValues?.notes ?? ""} />
       </div>
 
-      <Button type="submit">Add Deal</Button>
+      <div className="flex gap-2">
+        <Button type="submit">{isEdit ? "Save" : "Add Deal"}</Button>
+        {isEdit && (
+          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+        )}
+      </div>
     </form>
   );
 }

@@ -24,6 +24,27 @@ export async function createContact(formData: FormData) {
   revalidatePath("/contacts");
 }
 
+export async function updateContact(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const name = (formData.get("name") as string).trim();
+  if (!name) throw new Error("Name is required");
+
+  const companyId = (formData.get("companyId") as string) || null;
+  await db.update(contacts).set({
+    name,
+    email: (formData.get("email") as string).trim() || null,
+    phone: (formData.get("phone") as string).trim() || null,
+    role: (formData.get("role") as string).trim() || null,
+    notes: (formData.get("notes") as string).trim() || null,
+    companyId,
+    clientId: companyId,
+  }).where(eq(contacts.id, id));
+  revalidatePath("/contacts");
+}
+
 export async function deleteContact(formData: FormData) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

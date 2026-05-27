@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createHoursEntry } from "./actions";
+import { createHoursEntry, updateHoursEntry } from "./actions";
 
 const TYPE_OPTIONS = [
   { value: "client", label: "Client Work" },
@@ -15,36 +15,63 @@ const TYPE_OPTIONS = [
 
 type Engagement = { id: string; name: string };
 
+type DefaultValues = {
+  id: string;
+  date: string;
+  hours: number;
+  type: string;
+  engagementId: string | null;
+  notes: string | null;
+};
+
 export function HoursForm({
   engagements,
   today,
+  defaultValues,
+  onCancel,
 }: {
   engagements: Engagement[];
   today: string;
+  defaultValues?: DefaultValues;
+  onCancel?: () => void;
 }) {
   const ref = useRef<HTMLFormElement>(null);
+  const isEdit = !!defaultValues;
 
   return (
     <form
       ref={ref}
       action={async (formData) => {
-        await createHoursEntry(formData);
-        ref.current?.reset();
+        if (isEdit) {
+          await updateHoursEntry(formData);
+        } else {
+          await createHoursEntry(formData);
+          ref.current?.reset();
+        }
+        onCancel?.();
       }}
       className="border rounded-lg p-4 space-y-4"
     >
-      <h2 className="font-medium">Log Hours</h2>
+      {isEdit && <input type="hidden" name="id" value={defaultValues.id} />}
+      <h2 className="font-medium">{isEdit ? "Edit Entry" : "Log Hours"}</h2>
 
       <div className="grid grid-cols-4 gap-4">
         <div className="space-y-1">
           <Label htmlFor="date">Date *</Label>
-          <Input id="date" name="date" type="date" defaultValue={today} required />
+          <Input
+            id="date"
+            name="date"
+            type="date"
+            required
+            defaultValue={defaultValues?.date ?? today}
+          />
         </div>
         <div className="space-y-1">
           <Label htmlFor="engagementId">Engagement</Label>
           <select
             id="engagementId"
             name="engagementId"
+            defaultValue={defaultValues?.engagementId ?? ""}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">None</option>
@@ -59,7 +86,7 @@ export function HoursForm({
             id="type"
             name="type"
             required
-            defaultValue="client"
+            defaultValue={defaultValues?.type ?? "client"}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             {TYPE_OPTIONS.map((t) => (
@@ -78,16 +105,22 @@ export function HoursForm({
             step="0.25"
             placeholder="2.0"
             required
+            defaultValue={defaultValues?.hours ?? ""}
           />
         </div>
       </div>
 
       <div className="space-y-1">
         <Label htmlFor="notes">Notes</Label>
-        <Input id="notes" name="notes" placeholder="What did you work on?" />
+        <Input id="notes" name="notes" placeholder="What did you work on?" defaultValue={defaultValues?.notes ?? ""} />
       </div>
 
-      <Button type="submit">Log Entry</Button>
+      <div className="flex gap-2">
+        <Button type="submit">{isEdit ? "Save" : "Log Entry"}</Button>
+        {isEdit && (
+          <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+        )}
+      </div>
     </form>
   );
 }

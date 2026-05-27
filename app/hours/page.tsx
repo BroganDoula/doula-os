@@ -6,18 +6,11 @@ import { db } from "@/db";
 import { hoursEntries, engagements } from "@/db/schema";
 import { Button } from "@/components/ui/button";
 import { HoursForm } from "./hours-form";
-import { deleteHoursEntry } from "./actions";
-
-const TYPE_LABELS: Record<string, string> = {
-  client: "Client",
-  bd: "BD",
-  admin: "Admin",
-  driving: "Driving",
-};
+import { HoursList } from "./hours-list";
 
 function getWeekBounds(today: Date) {
-  const day = today.getDay(); // 0 = Sun
-  const diff = day === 0 ? -6 : 1 - day; // back to Monday
+  const day = today.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
   const monday = new Date(today);
   monday.setDate(today.getDate() + diff);
   const sunday = new Date(monday);
@@ -82,7 +75,6 @@ export default async function HoursPage({
       .where(and(gte(hoursEntries.date, week.from), lte(hoursEntries.date, week.to))),
   ]);
 
-  // Weekly actuals by engagement
   const weeklyActuals: Record<string, number> = {};
   for (const r of weekRows) {
     if (r.engagementId) {
@@ -91,7 +83,6 @@ export default async function HoursPage({
   }
 
   const activeEngagements = allEngagements.filter((e) => e.status === "active");
-  const totalHours = rows.reduce((sum, r) => sum + r.hours, 0);
 
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-8">
@@ -130,10 +121,8 @@ export default async function HoursPage({
                       {actual > 0 ? actual.toFixed(1) : "—"}
                     </td>
                     <td className={`py-1.5 text-right font-medium ${
-                      !hasCommitment
-                        ? "text-muted-foreground"
-                        : delta >= 0
-                        ? "text-green-600"
+                      !hasCommitment ? "text-muted-foreground"
+                        : delta >= 0 ? "text-green-600"
                         : "text-red-500"
                     }`}>
                       {hasCommitment
@@ -184,55 +173,11 @@ export default async function HoursPage({
           </div>
           <div className="flex items-center gap-2">
             <Button type="submit" variant="outline" size="sm">Filter</Button>
-            <a href="/hours" className="text-sm text-muted-foreground hover:text-foreground">
-              Reset
-            </a>
+            <a href="/hours" className="text-sm text-muted-foreground hover:text-foreground">Reset</a>
           </div>
         </form>
 
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium">Log</h2>
-          <span className="text-sm text-muted-foreground">
-            {rows.length} {rows.length === 1 ? "entry" : "entries"} · {totalHours.toFixed(1)} hrs
-          </span>
-        </div>
-
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b text-left text-muted-foreground">
-              <th className="pb-2 font-medium">Date</th>
-              <th className="pb-2 font-medium">Engagement</th>
-              <th className="pb-2 font-medium">Type</th>
-              <th className="pb-2 font-medium">Hours</th>
-              <th className="pb-2 font-medium">Notes</th>
-              <th className="pb-2" />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={6} className="py-6 text-center text-muted-foreground">
-                  No entries for this period.
-                </td>
-              </tr>
-            )}
-            {rows.map((r) => (
-              <tr key={r.id} className="border-b">
-                <td className="py-2 text-muted-foreground tabular-nums">{r.date}</td>
-                <td className="py-2">{r.engagementName ?? "—"}</td>
-                <td className="py-2 text-muted-foreground">{TYPE_LABELS[r.type] ?? r.type}</td>
-                <td className="py-2 font-medium tabular-nums">{r.hours.toFixed(1)}</td>
-                <td className="py-2 text-muted-foreground max-w-xs truncate">{r.notes ?? "—"}</td>
-                <td className="py-2 text-right">
-                  <form action={deleteHoursEntry}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <HoursList rows={rows} engagements={allEngagements} today={todayStr} />
       </section>
     </div>
   );

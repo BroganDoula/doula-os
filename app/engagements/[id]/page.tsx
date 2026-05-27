@@ -3,11 +3,11 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/db";
 import { engagements, proposals, deliverables, companies } from "@/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { ProposalUploadForm } from "./proposal-upload-form";
-import { DeliverableAddForm } from "./deliverable-add-form";
-import { deleteProposal, deleteDeliverable, toggleDeliverable } from "../actions";
+import { DeliverableList } from "./deliverable-list";
+import { deleteProposal } from "../actions";
 
 const PHASE_LABELS: Record<string, string> = {
   definition:       "1 — Definition",
@@ -47,16 +47,18 @@ export default async function EngagementDetailPage({
       .where(eq(engagements.id, id))
       .limit(1),
     db
-      .select({
-        id: proposals.id,
-        fileName: proposals.fileName,
-        uploadedAt: proposals.uploadedAt,
-      })
+      .select({ id: proposals.id, fileName: proposals.fileName, uploadedAt: proposals.uploadedAt })
       .from(proposals)
       .where(eq(proposals.engagementId, id))
       .orderBy(proposals.uploadedAt),
     db
-      .select()
+      .select({
+        id: deliverables.id,
+        title: deliverables.title,
+        status: deliverables.status,
+        proposalId: deliverables.proposalId,
+        dueDate: deliverables.dueDate,
+      })
       .from(deliverables)
       .where(eq(deliverables.engagementId, id))
       .orderBy(deliverables.createdAt),
@@ -105,95 +107,46 @@ export default async function EngagementDetailPage({
         )}
       </div>
 
-      {/* Proposals + Deliverables */}
-      <section className="space-y-4">
+      {/* Proposals */}
+      <section className="space-y-3">
         <h2 className="font-medium">Proposals</h2>
-
         <ProposalUploadForm engagementId={engagement.id} clientId={clientId} />
-
         {proposalRows.length === 0 && (
           <p className="text-sm text-muted-foreground">No proposals uploaded yet.</p>
         )}
-
-        {proposalRows.map((proposal) => {
-          const items = deliverableRows.filter((d) => d.proposalId === proposal.id);
-          const done = items.filter((d) => d.status === "complete").length;
-
-          return (
-            <div key={proposal.id} className="border rounded-lg p-4 space-y-3">
-              {/* Proposal row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <a
-                    href={`/api/proposals/${proposal.id}/file`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-medium text-sm hover:underline"
-                  >
-                    {proposal.fileName}
-                  </a>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(proposal.uploadedAt).toLocaleDateString()}
-                  </span>
-                  {items.length > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {done}/{items.length} done
-                    </span>
-                  )}
-                </div>
-                <form action={deleteProposal}>
-                  <input type="hidden" name="id" value={proposal.id} />
-                  <input type="hidden" name="engagementId" value={engagement.id} />
-                  <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                </form>
-              </div>
-
-              {/* Deliverables checklist */}
-              <div className="space-y-1.5 pl-1">
-                {items.map((d) => (
-                  <div key={d.id} className="flex items-center gap-2.5 group">
-                    <form action={toggleDeliverable}>
-                      <input type="hidden" name="id" value={d.id} />
-                      <input type="hidden" name="engagementId" value={engagement.id} />
-                      <input type="hidden" name="currentStatus" value={d.status} />
-                      <button
-                        type="submit"
-                        className={`w-4 h-4 rounded border shrink-0 transition-colors ${
-                          d.status === "complete"
-                            ? "bg-green-500 border-green-500"
-                            : "border-border hover:border-green-400"
-                        }`}
-                      />
-                    </form>
-                    <span
-                      className={`text-sm flex-1 ${
-                        d.status === "complete" ? "line-through text-muted-foreground" : ""
-                      }`}
-                    >
-                      {d.title}
-                    </span>
-                    {d.dueDate && (
-                      <span className="text-xs text-muted-foreground shrink-0">{d.dueDate}</span>
-                    )}
-                    <form action={deleteDeliverable} className="opacity-0 group-hover:opacity-100">
-                      <input type="hidden" name="id" value={d.id} />
-                      <input type="hidden" name="engagementId" value={engagement.id} />
-                      <Button variant="ghost" size="sm" type="submit" className="h-6 w-6 p-0 text-muted-foreground">
-                        ×
-                      </Button>
-                    </form>
-                  </div>
-                ))}
-
-                <DeliverableAddForm
-                  engagementId={engagement.id}
-                  proposalId={proposal.id}
-                  clientId={clientId}
-                />
-              </div>
+        {proposalRows.map((p) => (
+          <div key={p.id} className="flex items-center justify-between border rounded-md px-3 py-2">
+            <div className="flex items-center gap-3">
+              <a
+                href={`/api/proposals/${p.id}/file`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium hover:underline"
+              >
+                {p.fileName}
+              </a>
+              <span className="text-xs text-muted-foreground">
+                {new Date(p.uploadedAt).toLocaleDateString()}
+              </span>
             </div>
-          );
-        })}
+            <form action={deleteProposal}>
+              <input type="hidden" name="id" value={p.id} />
+              <input type="hidden" name="engagementId" value={engagement.id} />
+              <Button variant="ghost" size="sm" type="submit">Delete</Button>
+            </form>
+          </div>
+        ))}
+      </section>
+
+      {/* Deliverables */}
+      <section className="space-y-3">
+        <h2 className="font-medium">Deliverables</h2>
+        <DeliverableList
+          deliverables={deliverableRows}
+          proposals={proposalRows}
+          engagementId={engagement.id}
+          clientId={clientId}
+        />
       </section>
     </div>
   );
