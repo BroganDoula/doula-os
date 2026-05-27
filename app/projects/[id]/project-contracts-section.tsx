@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ContractForm } from "@/app/contracts/contract-form";
@@ -45,6 +46,7 @@ export function ProjectContractsSection({
   const ref = useRef<HTMLFormElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({});
 
   // Single-item lists so ContractForm dropdowns are pre-locked to this project's company/engagement
   const companies = [{ id: companyId, name: companyName }];
@@ -170,13 +172,22 @@ export function ProjectContractsSection({
                     <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>
                       Edit
                     </Button>
-                    <form action={deleteContract}>
-                      <input type="hidden" name="id" value={c.id} />
-                      {/* engagementId passed so deleteContract can revalidatePath(/projects/[id]) */}
-                      <input type="hidden" name="engagementId" value={engagementId} />
-                      <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                    </form>
+                    <DeleteConfirm
+                      title="Delete contract?"
+                      description={`This will hide ${c.fileName}. You can restore it from the Archived view.`}
+                      onConfirm={async () => {
+                        setDeleteErrors((prev) => { const n = { ...prev }; delete n[c.id]; return n; });
+                        const fd = new FormData();
+                        fd.append("id", c.id);
+                        fd.append("engagementId", engagementId);
+                        const res = await deleteContract(fd);
+                        if (res?.error) setDeleteErrors((prev) => ({ ...prev, [c.id]: res.error }));
+                      }}
+                    />
                   </div>
+                  {deleteErrors[c.id] && (
+                    <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[c.id]}</p>
+                  )}
                 </td>
               </tr>
             )

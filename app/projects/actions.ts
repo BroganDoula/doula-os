@@ -80,15 +80,9 @@ export async function deleteEngagement(formData: FormData): Promise<{ error: str
   if (!userId) throw new Error("Unauthorized");
 
   const id = formData.get("id") as string;
-  try {
-    await db.delete(engagements).where(eq(engagements.id, id));
-  } catch (err) {
-    if (isFKViolation(err)) {
-      return { error: "Can't delete: this project has linked hours, deliverables, or other records. Remove those first." };
-    }
-    throw err;
-  }
+  await db.update(engagements).set({ deletedAt: new Date() }).where(eq(engagements.id, id));
   revalidatePath("/projects");
+  return undefined;
 }
 
 // ── Proposals ─────────────────────────────────────────────────────────────────

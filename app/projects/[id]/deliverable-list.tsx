@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { DeliverableAddForm } from "./deliverable-add-form";
 import { deleteDeliverable, toggleDeliverable } from "../actions";
 
@@ -96,13 +97,16 @@ export function DeliverableList({
                 >
                   Edit
                 </Button>
-                <form action={deleteDeliverable}>
-                  <input type="hidden" name="id" value={d.id} />
-                  <input type="hidden" name="engagementId" value={engagementId} />
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-muted-foreground">
-                    ×
-                  </Button>
-                </form>
+                <DeleteConfirm
+                  title="Delete deliverable?"
+                  description={`This will permanently delete "${d.title}".`}
+                  onConfirm={async () => {
+                    const fd = new FormData();
+                    fd.append("id", d.id);
+                    fd.append("engagementId", engagementId);
+                    await deleteDeliverable(fd);
+                  }}
+                />
               </div>
             </div>
           )

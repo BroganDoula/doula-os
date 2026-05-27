@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { NdaForm } from "./nda-form";
 import { deleteNda } from "./actions";
 
@@ -120,17 +121,17 @@ export function NdaList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(n.id)}>Edit</Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => {
+                  <DeleteConfirm
+                    title="Delete NDA?"
+                    description={`This will hide the ${n.counterparty} NDA. You can restore it from the Archived view.`}
+                    onConfirm={async () => {
                       setDeleteErrors((prev) => { const next = { ...prev }; delete next[n.id]; return next; });
                       const fd = new FormData();
                       fd.append("id", n.id);
                       const res = await deleteNda(fd);
                       if (res?.error) setDeleteErrors((prev) => ({ ...prev, [n.id]: res.error }));
                     }}
-                  >Delete</Button>
+                  />
                 </div>
                 {deleteErrors[n.id] && (
                   <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[n.id]}</p>

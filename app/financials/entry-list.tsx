@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { EntryForm, type EntryType } from "./entry-form";
 import { deleteFinancialEntry, markArPaid } from "./actions";
 
@@ -176,19 +177,17 @@ export function EntryList({
                     </form>
                   )}
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(r.id)}>Edit</Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => {
+                  <DeleteConfirm
+                    title="Delete entry?"
+                    description={`This will hide "${r.description}" (${formatDollars(r.amountCents)}). You can restore it from the Archived view.`}
+                    onConfirm={async () => {
                       setDeleteErrors((prev) => { const n = { ...prev }; delete n[r.id]; return n; });
                       const fd = new FormData();
                       fd.append("id", r.id);
                       const res = await deleteFinancialEntry(fd);
                       if (res?.error) setDeleteErrors((prev) => ({ ...prev, [r.id]: res.error }));
                     }}
-                  >
-                    Delete
-                  </Button>
+                  />
                 </div>
                 {deleteErrors[r.id] && (
                   <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[r.id]}</p>

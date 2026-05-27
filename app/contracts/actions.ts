@@ -79,7 +79,7 @@ export async function updateContract(formData: FormData) {
   if (fields.engagementId) revalidatePath(`/projects/${fields.engagementId}`);
 }
 
-export async function deleteContract(formData: FormData) {
+export async function deleteContract(formData: FormData): Promise<{ error: string } | undefined> {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -95,4 +95,5 @@ export async function deleteContract(formData: FormData) {
   revalidatePath("/contracts");
   if (row?.companyId) revalidatePath(`/companies/${row.companyId}`);
   if (row?.engagementId) revalidatePath(`/projects/${row.engagementId}`);
+  return undefined;
 }

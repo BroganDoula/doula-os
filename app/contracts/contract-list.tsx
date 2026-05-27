@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { ContractForm } from "./contract-form";
 import { deleteContract } from "./actions";
 
@@ -40,6 +41,7 @@ export function ContractList({
   engagements: Engagement[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({});
 
   return (
     <table className="w-full text-sm">
@@ -99,11 +101,21 @@ export function ContractList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
-                  <form action={deleteContract}>
-                    <input type="hidden" name="id" value={c.id} />
-                    <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                  </form>
+                  <DeleteConfirm
+                    title="Delete contract?"
+                    description={`This will hide ${c.fileName}. You can restore it from the Archived view.`}
+                    onConfirm={async () => {
+                      setDeleteErrors((prev) => { const n = { ...prev }; delete n[c.id]; return n; });
+                      const fd = new FormData();
+                      fd.append("id", c.id);
+                      const res = await deleteContract(fd);
+                      if (res?.error) setDeleteErrors((prev) => ({ ...prev, [c.id]: res.error }));
+                    }}
+                  />
                 </div>
+                {deleteErrors[c.id] && (
+                  <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[c.id]}</p>
+                )}
               </td>
             </tr>
           )

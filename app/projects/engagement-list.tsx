@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { EngagementForm } from "./engagement-form";
 import { deleteEngagement } from "./actions";
 
@@ -95,17 +96,17 @@ export function EngagementList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(e.id)}>Edit</Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => {
+                  <DeleteConfirm
+                    title="Delete project?"
+                    description={`This will hide ${e.name}. You can restore it from the Archived view.`}
+                    onConfirm={async () => {
                       setDeleteErrors((prev) => { const n = { ...prev }; delete n[e.id]; return n; });
                       const fd = new FormData();
                       fd.append("id", e.id);
                       const res = await deleteEngagement(fd);
                       if (res?.error) setDeleteErrors((prev) => ({ ...prev, [e.id]: res.error }));
                     }}
-                  >Delete</Button>
+                  />
                 </div>
                 {deleteErrors[e.id] && (
                   <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[e.id]}</p>

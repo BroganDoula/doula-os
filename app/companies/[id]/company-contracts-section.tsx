@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ContractForm } from "@/app/contracts/contract-form";
@@ -45,6 +46,7 @@ export function CompanyContractsSection({
   const ref = useRef<HTMLFormElement>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
+  const [deleteErrors, setDeleteErrors] = useState<Record<string, string>>({});
 
   const companies = [{ id: companyId, name: companyName }];
   const engagements = projects.map((p) => ({ id: p.id, name: p.name, companyId }));
@@ -184,11 +186,21 @@ export function CompanyContractsSection({
                 <td className="py-2 text-right">
                   <div className="flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
-                    <form action={deleteContract}>
-                      <input type="hidden" name="id" value={c.id} />
-                      <Button variant="ghost" size="sm" type="submit">Delete</Button>
-                    </form>
+                    <DeleteConfirm
+                      title="Delete contract?"
+                      description={`This will hide ${c.fileName}. You can restore it from the Archived view.`}
+                      onConfirm={async () => {
+                        setDeleteErrors((prev) => { const n = { ...prev }; delete n[c.id]; return n; });
+                        const fd = new FormData();
+                        fd.append("id", c.id);
+                        const res = await deleteContract(fd);
+                        if (res?.error) setDeleteErrors((prev) => ({ ...prev, [c.id]: res.error }));
+                      }}
+                    />
                   </div>
+                  {deleteErrors[c.id] && (
+                    <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[c.id]}</p>
+                  )}
                 </td>
               </tr>
             )

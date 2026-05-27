@@ -12,8 +12,8 @@ import {
   hoursEntries,
   ndas,
 } from "@/db/schema";
-import { Button } from "@/components/ui/button";
 import { ProposalUploadForm } from "./proposal-upload-form";
+import { ProjectProposalsSection } from "./project-proposals-section";
 import { DeliverableList } from "./deliverable-list";
 import { ProjectHeader } from "./project-header";
 import { ProjectContractsSection } from "./project-contracts-section";
@@ -21,7 +21,6 @@ import { ProjectHoursSection } from "./project-hours-section";
 import { ProjectNdasSection } from "./project-ndas-section";
 import { ProjectActivitySection } from "./project-activity-section";
 import type { ActivityItem } from "./project-activity-section";
-import { deleteProposal } from "../actions";
 
 function getWeekStart(today: Date): string {
   const day = today.getDay();
@@ -243,31 +242,14 @@ export default async function ProjectDetailPage({
       <section className="space-y-3">
         <h2 className="font-medium">Proposals</h2>
         <ProposalUploadForm engagementId={engagement.id} clientId={clientId} />
-        {proposalRows.length === 0 && (
-          <p className="text-sm text-muted-foreground">No proposals uploaded yet.</p>
-        )}
-        {proposalRows.map((p) => (
-          <div key={p.id} className="flex items-center justify-between border rounded-md px-3 py-2">
-            <div className="flex items-center gap-3">
-              <a
-                href={`/api/proposals/${p.id}/file`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-sm font-medium hover:underline"
-              >
-                {p.fileName}
-              </a>
-              <span className="text-xs text-muted-foreground">
-                {new Date(p.uploadedAt).toLocaleDateString()}
-              </span>
-            </div>
-            <form action={deleteProposal}>
-              <input type="hidden" name="id" value={p.id} />
-              <input type="hidden" name="engagementId" value={engagement.id} />
-              <Button variant="ghost" size="sm" type="submit">Delete</Button>
-            </form>
-          </div>
-        ))}
+        <ProjectProposalsSection
+          proposals={proposalRows.map((p) => ({
+            id: p.id,
+            fileName: p.fileName,
+            uploadedAt: new Date(p.uploadedAt).toISOString(),
+          }))}
+          engagementId={engagement.id}
+        />
       </section>
 
       {/* Deliverables */}

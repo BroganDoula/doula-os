@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { DealForm } from "./deal-form";
 import { deleteDeal } from "./actions";
 
@@ -107,17 +108,17 @@ export function DealList({
               <td className="py-2 text-right">
                 <div className="flex gap-1 justify-end">
                   <Button variant="ghost" size="sm" onClick={() => setEditingId(d.id)}>Edit</Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={async () => {
+                  <DeleteConfirm
+                    title="Delete lead?"
+                    description={`This will permanently delete ${STAGE_LABELS[d.stage] ?? d.stage}${d.companyName ? ` — ${d.companyName}` : ""}.`}
+                    onConfirm={async () => {
                       setDeleteErrors((prev) => { const n = { ...prev }; delete n[d.id]; return n; });
                       const fd = new FormData();
                       fd.append("id", d.id);
                       const res = await deleteDeal(fd);
                       if (res?.error) setDeleteErrors((prev) => ({ ...prev, [d.id]: res.error }));
                     }}
-                  >Delete</Button>
+                  />
                 </div>
                 {deleteErrors[d.id] && (
                   <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[d.id]}</p>

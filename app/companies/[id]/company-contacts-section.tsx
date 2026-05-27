@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirm } from "@/components/ui/delete-confirm";
 import { ContactForm } from "@/app/contacts/contact-form";
 import { deleteContact } from "@/app/contacts/actions";
 
@@ -85,10 +86,10 @@ export function CompanyContactsSection({
                 <td className="py-2 text-right">
                   <div className="flex gap-1 justify-end">
                     <Button variant="ghost" size="sm" onClick={() => setEditingId(c.id)}>Edit</Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={async () => {
+                    <DeleteConfirm
+                      title="Delete contact?"
+                      description={`This will permanently delete ${c.name}.`}
+                      onConfirm={async () => {
                         setDeleteErrors((prev) => { const n = { ...prev }; delete n[c.id]; return n; });
                         const fd = new FormData();
                         fd.append("id", c.id);
@@ -96,7 +97,7 @@ export function CompanyContactsSection({
                         const res = await deleteContact(fd);
                         if (res?.error) setDeleteErrors((prev) => ({ ...prev, [c.id]: res.error }));
                       }}
-                    >Delete</Button>
+                    />
                   </div>
                   {deleteErrors[c.id] && (
                     <p className="text-xs text-red-500 mt-1 text-right">{deleteErrors[c.id]}</p>
