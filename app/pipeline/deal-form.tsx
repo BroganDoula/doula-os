@@ -64,7 +64,7 @@ export function DealForm({
       className="border rounded-lg p-4 space-y-4"
     >
       {isEdit && <input type="hidden" name="id" value={defaultValues.id} />}
-      <h2 className="font-medium">{isEdit ? "Edit Deal" : "New Deal"}</h2>
+      <h2 className="font-medium">{isEdit ? "Edit Lead" : "New Lead"}</h2>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
@@ -133,7 +133,7 @@ export function DealForm({
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="dealSize">Deal Size ($)</Label>
+          <Label htmlFor="dealSize">Lead Value ($)</Label>
           <Input
             id="dealSize"
             name="dealSize"
@@ -164,7 +164,7 @@ export function DealForm({
       </div>
 
       <div className="flex gap-2">
-        <Button type="submit">{isEdit ? "Save" : "Add Deal"}</Button>
+        <Button type="submit">{isEdit ? "Save" : "Add Lead"}</Button>
         {isEdit && (
           <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
         )}

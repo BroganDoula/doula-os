@@ -75,7 +75,7 @@ export function DealList({
         {rows.length === 0 && (
           <tr>
             <td colSpan={8} className="py-6 text-center text-muted-foreground">
-              No deals yet.
+              No leads yet.
             </td>
           </tr>
         )}

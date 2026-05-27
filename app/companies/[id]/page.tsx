@@ -181,7 +181,7 @@ export default async function CompanyDetailPage({
       at: new Date(c.createdAt).toISOString(),
     })),
     ...recentDealRows.map((d) => ({
-      label: "Deal updated",
+      label: "Lead updated",
       detail: STAGE_LABELS[d.stage] ?? d.stage,
       at: new Date(d.updatedAt).toISOString(),
     })),
@@ -256,9 +256,9 @@ export default async function CompanyDetailPage({
 
       {/* Deals */}
       <section className="space-y-3">
-        <h2 className="font-medium">Deals</h2>
+        <h2 className="font-medium">Leads</h2>
         {dealRows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No deals for this company.</p>
+          <p className="text-sm text-muted-foreground">No leads for this company.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
