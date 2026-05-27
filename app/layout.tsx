@@ -37,6 +37,7 @@ export default function RootLayout({
             <Link href="/pipeline" className="hover:text-foreground transition-colors">Pipeline</Link>
             <Link href="/engagements" className="hover:text-foreground transition-colors">Engagements</Link>
             <Link href="/hours" className="hover:text-foreground transition-colors">Hours</Link>
+            <Link href="/contracts" className="hover:text-foreground transition-colors">Contracts</Link>
           </nav>
           {children}
         </body>
