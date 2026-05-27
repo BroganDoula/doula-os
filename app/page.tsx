@@ -24,9 +24,6 @@ export default async function Home() {
             {rows.map((c) => (
               <li key={c.id} className="text-sm border rounded px-3 py-2">
                 <span className="font-medium">{c.name}</span>
-                {c.company && (
-                  <span className="text-gray-500"> · {c.company}</span>
-                )}
                 {c.email && (
                   <span className="text-gray-400"> · {c.email}</span>
                 )}

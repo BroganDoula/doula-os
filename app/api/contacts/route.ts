@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const body = await request.json();
-  const { name, email, company } = body;
+  const { name, email, companyId } = body;
 
   if (!name) {
     return Response.json({ error: "name is required" }, { status: 400 });
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
   const [created] = await db
     .insert(contacts)
-    .values({ name, email, company })
+    .values({ name, email, companyId })
     .returning();
 
   return Response.json(created, { status: 201 });
