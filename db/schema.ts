@@ -209,6 +209,7 @@ export const proposals = pgTable(
     fileData: text("file_data"),
     fileUrl: text("file_url"),
     fileName: text("file_name").notNull(),
+    fileMimeType: text("file_mime_type"),
     uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -289,9 +290,12 @@ export const contracts = pgTable(
     companyId: text("company_id")
       .notNull()
       .references(() => companies.id, { onDelete: "restrict" }),
+    // set null — contract survives if engagement is deleted; many contracts span multiple engagements
+    engagementId: text("engagement_id").references(() => engagements.id, { onDelete: "set null" }),
     fileData: text("file_data"),
     fileUrl: text("file_url"),
     fileName: text("file_name").notNull(),
+    fileMimeType: text("file_mime_type"),
     signedDate: date("signed_date"),
     termMonths: integer("term_months"),
     valueCents: integer("value_cents"),
@@ -302,6 +306,7 @@ export const contracts = pgTable(
   },
   (table) => [
     index("contracts_company_id_idx").on(table.companyId),
+    index("contracts_engagement_id_idx").on(table.engagementId),
   ]
 );
 

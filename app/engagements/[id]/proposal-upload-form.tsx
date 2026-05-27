@@ -26,12 +26,12 @@ export function ProposalUploadForm({
       <input type="hidden" name="engagementId" value={engagementId} />
       <input type="hidden" name="clientId" value={clientId} />
       <div className="space-y-1 flex-1">
-        <Label htmlFor="file" className="text-xs">Upload Proposal PDF</Label>
+        <Label htmlFor="file" className="text-xs">Upload Proposal (PDF or Word)</Label>
         <input
           id="file"
           name="file"
           type="file"
-          accept=".pdf"
+          accept=".pdf,.doc,.docx"
           required
           className="w-full text-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium cursor-pointer"
         />

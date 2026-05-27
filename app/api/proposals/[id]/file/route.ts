@@ -13,7 +13,7 @@ export async function GET(
 
   const { id } = await params;
   const rows = await db
-    .select({ fileData: proposals.fileData, fileName: proposals.fileName })
+    .select({ fileData: proposals.fileData, fileName: proposals.fileName, fileMimeType: proposals.fileMimeType })
     .from(proposals)
     .where(eq(proposals.id, id))
     .limit(1);
@@ -24,7 +24,7 @@ export async function GET(
   const buffer = Buffer.from(proposal.fileData, "base64");
   return new NextResponse(buffer, {
     headers: {
-      "Content-Type": "application/pdf",
+      "Content-Type": proposal.fileMimeType ?? "application/octet-stream",
       "Content-Disposition": `inline; filename="${proposal.fileName}"`,
       "Content-Length": String(buffer.length),
     },

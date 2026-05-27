@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,10 +8,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { createContract, updateContract } from "./actions";
 
 type Company = { id: string; name: string };
+type Engagement = { id: string; name: string; companyId: string };
 
 type DefaultValues = {
   id: string;
   companyId: string;
+  engagementId: string | null;
   fileName: string;
   signedDate: string | null;
   termMonths: number | null;
@@ -21,15 +23,20 @@ type DefaultValues = {
 
 export function ContractForm({
   companies,
+  engagements,
   defaultValues,
   onCancel,
 }: {
   companies: Company[];
+  engagements: Engagement[];
   defaultValues?: DefaultValues;
   onCancel?: () => void;
 }) {
   const ref = useRef<HTMLFormElement>(null);
   const isEdit = !!defaultValues;
+  const [selectedCompanyId, setSelectedCompanyId] = useState(defaultValues?.companyId ?? "");
+
+  const filteredEngagements = engagements.filter((e) => e.companyId === selectedCompanyId);
 
   return (
     <form
@@ -40,6 +47,7 @@ export function ContractForm({
         } else {
           await createContract(formData);
           ref.current?.reset();
+          setSelectedCompanyId("");
         }
         onCancel?.();
       }}
@@ -55,7 +63,8 @@ export function ContractForm({
             id="companyId"
             name="companyId"
             required
-            defaultValue={defaultValues?.companyId ?? ""}
+            value={selectedCompanyId}
+            onChange={(e) => setSelectedCompanyId(e.target.value)}
             className="w-full border rounded-md px-3 py-2 text-sm bg-background"
           >
             <option value="">Select company…</option>
@@ -66,19 +75,36 @@ export function ContractForm({
         </div>
 
         <div className="space-y-1">
-          <Label htmlFor="file">{isEdit ? "Replace PDF (optional)" : "PDF File *"}</Label>
-          <input
-            id="file"
-            name="file"
-            type="file"
-            accept=".pdf"
-            required={!isEdit}
-            className="w-full text-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium cursor-pointer"
-          />
-          {isEdit && (
-            <p className="text-xs text-muted-foreground">Current: {defaultValues.fileName}</p>
-          )}
+          <Label htmlFor="engagementId">Linked Engagement</Label>
+          <select
+            id="engagementId"
+            name="engagementId"
+            key={selectedCompanyId}
+            disabled={!selectedCompanyId}
+            defaultValue={defaultValues?.engagementId ?? ""}
+            className="w-full border rounded-md px-3 py-2 text-sm bg-background disabled:opacity-50"
+          >
+            <option value="">None</option>
+            {filteredEngagements.map((e) => (
+              <option key={e.id} value={e.id}>{e.name}</option>
+            ))}
+          </select>
         </div>
+      </div>
+
+      <div className="space-y-1">
+        <Label htmlFor="file">{isEdit ? "Replace file (optional)" : "File *"}</Label>
+        <input
+          id="file"
+          name="file"
+          type="file"
+          accept=".pdf,.doc,.docx"
+          required={!isEdit}
+          className="w-full text-sm file:mr-3 file:border-0 file:bg-transparent file:text-sm file:font-medium cursor-pointer"
+        />
+        {isEdit && (
+          <p className="text-xs text-muted-foreground">Current: {defaultValues.fileName}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-4">

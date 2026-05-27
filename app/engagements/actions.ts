@@ -93,7 +93,7 @@ export async function createProposal(formData: FormData) {
   const bytes = await file.arrayBuffer();
   const fileData = Buffer.from(bytes).toString("base64");
 
-  await db.insert(proposals).values({ engagementId, clientId, fileName: file.name, fileData });
+  await db.insert(proposals).values({ engagementId, clientId, fileName: file.name, fileData, fileMimeType: file.type || null });
   revalidatePath(`/engagements/${engagementId}`);
 }
 

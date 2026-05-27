@@ -8,15 +8,18 @@ import { deleteContract } from "./actions";
 type ContractRow = {
   id: string;
   companyId: string;
+  engagementId: string | null;
   fileName: string;
   signedDate: string | null;
   termMonths: number | null;
   valueCents: number | null;
   notes: string | null;
   companyName: string | null;
+  engagementName: string | null;
 };
 
 type Company = { id: string; name: string };
+type Engagement = { id: string; name: string; companyId: string };
 
 function formatDollars(cents: number | null) {
   if (cents === null) return "—";
@@ -30,9 +33,11 @@ function formatDollars(cents: number | null) {
 export function ContractList({
   rows,
   companies,
+  engagements,
 }: {
   rows: ContractRow[];
   companies: Company[];
+  engagements: Engagement[];
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -62,6 +67,7 @@ export function ContractList({
               <td colSpan={6} className="py-2">
                 <ContractForm
                   companies={companies}
+                  engagements={engagements}
                   defaultValues={c}
                   onCancel={() => setEditingId(null)}
                 />
@@ -70,7 +76,7 @@ export function ContractList({
           ) : (
             <tr key={c.id} className="border-b">
               <td className="py-2 font-medium">{c.companyName ?? "—"}</td>
-              <td className="py-2 text-muted-foreground">
+              <td className="py-2">
                 <a
                   href={`/api/contracts/${c.id}/file`}
                   target="_blank"
@@ -79,6 +85,11 @@ export function ContractList({
                 >
                   {c.fileName}
                 </a>
+                {c.engagementName && (
+                  <span className="ml-2 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                    {c.engagementName}
+                  </span>
+                )}
               </td>
               <td className="py-2 text-muted-foreground">{c.signedDate ?? "—"}</td>
               <td className="py-2 text-muted-foreground">
