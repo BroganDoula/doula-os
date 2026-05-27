@@ -71,6 +71,7 @@ export async function updateEngagement(formData: FormData) {
     weeklyHourCommitment, startedAt, status, notes, updatedBy: userId,
   }).where(eq(engagements.id, id));
   revalidatePath("/projects");
+  revalidatePath(`/projects/${id}`);
 }
 
 export async function deleteEngagement(formData: FormData) {

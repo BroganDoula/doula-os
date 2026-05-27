@@ -365,6 +365,8 @@ export const ndas = pgTable(
     clientId: text("client_id").references(() => companies.id, { onDelete: "set null" }),
     // set null — same
     companyId: text("company_id").references(() => companies.id, { onDelete: "set null" }),
+    // set null — MSA-level NDAs won't have this set; project-level NDAs link here
+    engagementId: text("engagement_id").references(() => engagements.id, { onDelete: "set null" }),
     counterparty: text("counterparty").notNull(),
     fileData: text("file_data"),
     fileUrl: text("file_url"),
@@ -384,6 +386,7 @@ export const ndas = pgTable(
   },
   (table) => [
     index("ndas_expiration_date_idx").on(table.expirationDate),
+    index("ndas_engagement_id_idx").on(table.engagementId),
   ]
 );
 

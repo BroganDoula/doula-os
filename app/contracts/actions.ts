@@ -42,6 +42,8 @@ export async function createContract(formData: FormData) {
     ...parseContractFields(formData),
   });
   revalidatePath("/contracts");
+  const createEngId = (formData.get("engagementId") as string)?.trim() || null;
+  if (createEngId) revalidatePath(`/projects/${createEngId}`);
 }
 
 export async function updateContract(formData: FormData) {
@@ -69,6 +71,8 @@ export async function updateContract(formData: FormData) {
     ...parseContractFields(formData),
   }).where(eq(contracts.id, id));
   revalidatePath("/contracts");
+  const updateEngId = (formData.get("engagementId") as string)?.trim() || null;
+  if (updateEngId) revalidatePath(`/projects/${updateEngId}`);
 }
 
 export async function deleteContract(formData: FormData) {
@@ -78,4 +82,6 @@ export async function deleteContract(formData: FormData) {
   const id = formData.get("id") as string;
   await db.update(contracts).set({ deletedAt: new Date() }).where(eq(contracts.id, id));
   revalidatePath("/contracts");
+  const deleteEngId = (formData.get("engagementId") as string)?.trim() || null;
+  if (deleteEngId) revalidatePath(`/projects/${deleteEngId}`);
 }
